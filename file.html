@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat Component</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="shortcut icon" href="static/Untitled.png" type="image/x-icon">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.8.0/jszip.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.8.0/xlsx.js"></script>
+  <script>
+    var role = "";
+    var type = "";
+
+    var old_role = "";
+    var old_type = "";
+  </script>
+
+  <style>
+    .loader {
+      border: 10px solid #f3f3f3;
+      border-radius: 50%;
+      border-top: 10px solid #3498db;
+      width: 10px;
+      height: 10px;
+      -webkit-animation: spin 2s linear infinite;
+      /* Safari */
+      animation: spin 2s linear infinite;
+    }
+
+    .load {
+      border: 10px solid #f3f3f3;
+      border-radius: 50%;
+      border-top: 10px solid #3498db;
+      width: 10px;
+      height: 10px;
+      -webkit-animation: spin 2s linear infinite;
+      /* Safari */
+      animation: spin 2s linear infinite;
+    }
+
+    /* Safari */
+    @-webkit-keyframes spin {
+      0% {
+        -webkit-transform: rotate(0deg);
+      }
+
+      100% {
+        -webkit-transform: rotate(360deg);
+      }
+    }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+  </style>
+</head>
+
+
+<body class="bg-gray-300  " style="height: 100vh; width: 100%;">
+  <div class="main  " style="display: flex">
+        <div class="side-bar " style="width: 15%; height: 100vh; background-color: #3498db; ">
+        <div style="height: 100vh;">
+        <nav class=" border-gray-20 "  >
+            <div class="flex flex-wrap justify-between items-center  max-w-screen-xl p-2">
+              <a href="/" class="flex items-center">
+                <span class="self-center text-medium font-semibold whitespace-nowrap mb-1">
+                  <span>&#124;</span> Gen AI &nbsp;</span>
+                
+              </a>
+            </div>
+        </nav>
+    
+    
+            <div class="flex flex-wrap justify-between w-screen ">
+                <div class=" pb-1 items-center">
+                  <div class="sm:col-span-3  pr-3 flex items-center">
+        
+                    <div class="mt-2 p-2">
+                      <select id="rolevalue" name="role" autocomplete="role-name"
+                        class="block w-full rounded-md border-0 py-1.5 px-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:max-w-xs sm:text-sm sm:leading-6"
+                        style="background-color: #ffffff;">
+                        <option value="">Persona</option>
+                        <option value="Solution Architect">Solution Architect</option>
+                        <option value="Presales User">Presales User</option>
+                        <option value="Automation Manager">Automation Manager</option>
+                        <option value="AI Bot">AI Bot</option>
+                      </select>
+                    </div>
+                  </div>
+        
+                  <div class="sm:col-span-3  px-3 flex items-center">
+        
+                    <div class="mt-2">
+                      <select id="typevalue" name="role" autocomplete="role-name"
+                        class="block w-full rounded-md border-0 py-1.5 px-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:max-w-xs sm:text-sm sm:leading-6"
+                        style="background-color: #ffffff;">
+                        <option value="">Output Format</option>
+                        <option value="Bullets">Bullets</option>
+                        <option value="List">List</option>
+                        <option value="Paragraph">Paragraph</option>
+                        <option value="Points">Points</option>
+                      </select>
+                    </div>
+                  </div>
+        
+                 
+        
+        
+                </div>
+        
+                
+              </div>
+        
+    
+              <div class="sm:col-span-3  px-3 flex items-center py-4">
+                <button type="button" onclick="apply()"
+                  class="py- px-2 mt-3 text-xs  font-medium text-white bg-green-400 hover:bg-green-300 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-full text-xs px-3 py-1 mr-2 mb-2 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700"
+                  style="width: 40%; height: 35px; margin: auto;">Apply</button>
+              </div>
+    
+    
+              <div class=" px-3 flex items-center py-3 mx-auto">
+                <label class="block mb-2 text-xs px-1 font-medium text-grey-500 text-right" for="file_input">
+                  <ol style="line-height: 19px;">
+                    <li style="font-size: 18px;"><b>RFI Response Generator</b></li>
+                    <li>
+                      <p style="font-size: 14px;">Bulk Upload</p>
+                    </li>
+                  </ol>
+      
+      
+                </label>
+                
+              </div>
+    
+    
+              <input id="excelFileInput" class="block mx-auto w-3/2 text-xs text-gray-900 border border-gray-300
+                    rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400
+                    focus:outline-none dark:bg-gray-700 dark:border-gray-600
+                    dark:placeholder-gray-400" type="file" accept=".csv,
+                    application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,
+                    application/vnd.ms-excel">
+                <div id="fileloader" style="display: none;">
+                  <button type="button"
+                    class="inline-flex items-center transition
+                          ease-in-out duration-150 cursor-not-allowed py-1 px-2 mt-3 ml-2 text-xs font-medium text-white bg-green-400 hover:bg-green-300 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-full text-xs px-3 py-1 mr-2 mb-2"
+                    disabled="">
+                    <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none"
+                      viewBox="0 0 24
+                            24">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0
+                              018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014
+                              12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Processing...
+                  </button>
+      
+                </div>
+    
+    
+            <div class="flex py-4  bottom-0 fixed " style="left: 5%;">
+                <button type="button" onclick="signout()"
+                  class="ml-auto text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-full text-l px-3 py-2 mr-2 mb-2 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700">Sign
+                  Out</button>
+              </div>
+            </div>
+        </div>
+
+        <div class="dogs absolute inset-y-0 right-0 " style="width:85%; height: 90vh; ">
+            <div  style="width: 100%; height: 90vh; margin-left: 2px; right: 0; " >
+                <div class="maincontent flex flex-wrap justify-between items-center ">
+    
+                    <div class="flex flex-col items-center justify-center
+                        bg-gray-100 text-gray-800 p-1" style="min-height: 85vh; width:100%;">
+                      <!-- Component Start -->
+                      <div class="flex flex-col flex-grow w-full bg-white overflow-hidden" style="align-content: middle">
+                        <div id="scrrrr" class="flex flex-col flex-grow h-0 p-1 overflow-scroll" style="margin-bottom:10px; ">
+              
+              
+              
+                        </div>
+                      </div>
+                    </div> 
+                  </div>
+            </div>  
+
+            <div id="contentScreen" class="flex flex-wrap  items-center justify-center mr-auto  ">
+                <div style="bottom:0px;width:85%; "
+                  class="flex flex-wrap justify-between items-center  rounded-b-lg py-2">
+          
+                  <form id="inputform" style="width:85% ">
+                    <input class="flex items-center h-8 w-full rounded px-2 text-sm" id="queryinput" type="text" name="value"
+                      placeholder="Type your message…" autocomplete="off" style="right: 100px;">
+                    <input type="submit" hidden="">
+                  </form>
+          
+                  <div class="sm:col-span-3  flex items-center">
+                    <div id="loader" class="flex w-full mt-2 space-x-3 max-w-xs"
+                      style="display: none; align-items: middle; left: 1%; position: absolute;">
+                      <div class=" p-1 rounded-r-lg rounded-bl-lg">
+                        <div class="loader"></div>
+                      </div>
+                    </div>
+                  </div>
+          
+                  <div class="sm:col-span-3  flex items-center" style="width:9%">
+                    <button type="button" id="submitButton" style="width: 100%;"
+                      class="text-xs font-medium text-white bg-green-400 hover:bg-green-300 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium  text-xs  h-8 rounded">Submit</button>
+                  </div>
+          
+                  <div class="sm:col-span-3  flex items-center" style="width:5%">
+                    <button type="button" onclick="clearChat()" style="width: 100%;"
+                      class="text-xs font-medium text-white bg-red-400 hover:bg-red-300 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium  text-xs  h-8 rounded">Clear
+                      Chat</button>
+                  </div>
+          
+          
+                </div>
+          
+            </div>
+        </div>
+       
+    </div>
+        
+   
+
+
+
+
+  <script>
+    function clearChat() {
+      window.location.href = "/chat"
+    }
+    function signout() {
+      window.location.href = "/logout"
+    }
+    document.addEventListener('DOMContentLoaded', function () {
+
+
+      const chatContainer = document.getElementById('scrrrr');
+      const messageForm = document.getElementById('inputform');
+      const messageInput = document.querySelector('input[name="value"]');
+
+      // Function to send a message and update the chat interface
+      const sendMessage = async (message) => {
+        try {
+          // Show loader while waiting for a response
+          showLoader();
+
+          // Make an Ajax request to your backend
+          const response = await fetch('/chat?value=' + message, {
+            method: 'GET',
+          });
+
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+
+          // Parse the response as JSON
+          const data = await response.text();
+        
+
+          // Update the chat interface with the AI response
+          addMessage(data);
+
+          // Hide the loader
+          hideLoader();
+
+          // Scroll to the bottom of the chat
+
+        } catch (error) {
+          console.error('Error:', error);
+        }
+      };
+
+      // Function to add a message to the chat interface
+      const addMessage = (message) => {
+
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'flex w-full mt-2 space-x-3 max-w-2xl';
+        messageDiv.innerHTML = `
+      <div class="flex-shrink-0 h-4 w-4 rounded-full">
+        <img src="static/Untitled.png">
+      </div>
+      <div>
+        <div class=" p-1 rounded-r-lg rounded-bl-lg" style="font-size:11px;background-color:#e8f4fb; width:150%">
+          ${message}
+        </div>
+      </div>
+    `;
+        chatContainer.appendChild(messageDiv);
+        scrollToBottom();
+      };
+
+      const addUserMessage = (message) => {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'flex w-full mt-2 space-x-3 max-w-2xl';
+        messageDiv.innerHTML = `
+      <div class="flex-shrink-0 h-4 w-4 rounded-full">
+        <img src="static/user.png">
+      </div>
+      <div>
+        <div class=" p-1 rounded-r-lg rounded-bl-lg text-white" style="font-size:11px;background-color:#0070AD;width:150%">
+          ${message}
+        </div>
+      </div>
+    `;
+        chatContainer.appendChild(messageDiv);
+        scrollToBottom();
+      };
+      // Function to show the loader
+      const showLoader = () => {
+        const loaderDiv = document.getElementById('loader');
+        loaderDiv.style.display = 'flex';
+      };
+
+      // Function to hide the loader
+      const hideLoader = () => {
+        const loaderDiv = document.getElementById('loader');
+        loaderDiv.style.display = 'none';
+      };
+
+      // Function to scroll to the bottom of the chat
+      const scrollToBottom = () => {
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+      };
+
+
+      messageForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        promptSubmit();
+      });
+
+      document.getElementById('submitButton').addEventListener('click', function () {
+        promptSubmit();
+      });
+
+
+      const promptSubmit = () => {
+        const message = messageInput.value.trim();
+
+        if (message !== '') {
+          addUserMessage(message);
+          sendMessage(message);
+          messageInput.value = '';
+        }
+      };
+    });
+
+
+
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.1/xlsx.full.min.js"></script>
+  <script>
+    const spinner = document.getElementById('fileloader');
+
+    document.getElementById('excelFileInput').addEventListener('change', handleFileSelect);
+    document.getElementById('excelFileInput').addEventListener('change', () => { spinner.style.display = "block" });
+
+    async function handleFileSelect(event) {
+      var files = event.target.files;
+      if (files.length === 0) {
+        console.log('No file selected');
+        return;
+      }
+
+      var file = files[0];
+      var excelReader = new ExcelToJSON();
+
+      await excelReader.parseExcel(file);
+    }
+
+    var ExcelToJSON = function () {
+      this.parseExcel = async function (file) {
+        var reader = new FileReader();
+
+        reader.onload = async function (e) {
+          var data = e.target.result;
+          var workbook = XLSX.read(data, { type: 'binary' });
+
+          workbook.SheetNames.forEach(async function (sheetName) {
+            var XL_row_object = XLSX.utils.sheet_to_row_object_array(workbook.Sheets[sheetName]);
+            console.log(XL_row_object);
+            var responses = [];
+            var res = new Array(XL_row_object.length).fill("Null Response");
+
+            // Assuming the first row contains headers, so starting from index 1
+            for (var i = 0; i < XL_row_object.length; i++) {
+              var firstColumnValue = XL_row_object[i][Object.keys(XL_row_object[i])[0]];
+              console.log("value : " + firstColumnValue);
+              // Send API requests without waiting for each response
+
+              getAIAnswer(firstColumnValue, i)
+                .then((value) => {
+
+                  responses.push(value['response']);
+
+                  res[parseInt(value['position'])] = value['response'];
+
+                  // If all responses are collected, proceed to create and save the Excel file
+                  if (responses.length === XL_row_object.length) {
+                    createAndSaveExcel(XL_row_object, res, sheetName);
+                  }
+                })
+                .catch((error) => console.error('Error:', error));
+            }
+          });
+        };
+
+        reader.onerror = function (ex) {
+          console.log(ex);
+        };
+
+        reader.readAsBinaryString(file);
+      };
+
+      // Function to create and save the Excel file
+      function createAndSaveExcel(XL_row_object, responses, sheetName) {
+        for (var i = 0; i < XL_row_object.length; i++) {
+          XL_row_object[i]['Answer'] = responses[i];
+        }
+
+        // Create a new worksheet with the modified data
+        var newWorksheet = XLSX.utils.json_to_sheet(XL_row_object);
+
+        var header = ["Question", "Answer", ""];
+
+        XLSX.utils.sheet_add_aoa(newWorksheet, [header, ...XL_row_object.map(obj => Object.values(obj))], { origin: "A1" });
+        newWorksheet["!rows"] = [{ s: { c: 0, r: 0 }, e: { c: 2, r: 0 }, outlineLevel: 0, collapsed: false, hidden: false, customHeight: true, height: 15.75 }];
+
+
+        // Create a new workbook with the new worksheet
+        var newWorkbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(newWorkbook, newWorksheet, sheetName);
+
+        // Convert the workbook to binary data
+        var newData = XLSX.write(newWorkbook, { bookType: 'xlsx', type: 'binary' });
+
+        // Create a Blob and save the file
+        var blob = new Blob([s2ab(newData)], { type: 'application/octet-stream' });
+        saveAs(blob, 'gpt_response.xlsx');
+
+      }
+    };
+
+    // Function to save the file
+    function saveAs(blob, fileName) {
+      var link = document.createElement('a');
+      link.href = window.URL.createObjectURL(blob);
+      link.download = fileName;
+      link.click();
+      spinner.style.display = 'none';
+    }
+
+    // Convert string to array buffer
+    function s2ab(s) {
+      var buf = new ArrayBuffer(s.length);
+      var view = new Uint8Array(buf);
+      for (var i = 0; i != s.length; ++i) view[i] = s.charCodeAt(i) & 0xFF;
+      return buf;
+    }
+
+    const getAIAnswer = async (message, position) => {
+      try {
+        const response = await fetch('/chatres?value=' + message, {
+          method: 'GET',
+        });
+
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return { response: await response.text(), position: position };
+      } catch (error) {
+        console.error('Error:', error);
+      }
+    };
+  </script>
+  <script>
+
+
+    function apply() {
+
+      role = document.getElementById("rolevalue").value;
+      type = document.getElementById("typevalue").value;
+
+      var query = document.getElementById("queryinput").value;
+      
+
+      if (query) {
+        if (!query.includes("Act as a")) {
+          if (role) {
+            query = "Act as a " + role + " and provide detailed information on " + query;
+            old_role=role;
+          }
+        }else{
+          if(old_role!= role)
+          {
+            
+            query = query.replace("Act as a " + old_role,"Act as a " + role);
+            old_role=role;
+          }
+        }
+        if (!query.includes("Let the output")) {
+          if (type) {
+            query += ". Let the output be in " + type + " style";
+            old_type=type;
+          }
+        }else{
+          if(old_type!= type)
+          {
+            query = query.replace(". Let the output be in " + old_type,". Let the output be in " + type);
+            old_type=type;
+          }
+        }
+
+      }
+      document.getElementById("queryinput").value = query;
+    }
+  </script>
+</body>
+
+</html>
